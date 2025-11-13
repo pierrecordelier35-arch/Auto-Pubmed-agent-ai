@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent IA - Exploration Scientifique</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🤖 Agent IA - Exploration Scientifique</h1>
+                <p class="subtitle">Assistant intelligent pour approfondir vos connaissances</p>
+            </div>
+        </header>
+
+        <!-- Carte d'information de l'article -->
+        <div class="article-card" id="articleCard">
+            <div class="article-header">
+                <h2>📄 Article en cours d'analyse</h2>
+            </div>
+            <div class="article-content">
+                <div class="article-item">
+                    <span class="label">Titre :</span>
+                    <span class="value" id="articleTitle">Chargement...</span>
+                </div>
+                <div class="article-item">
+                    <span class="label">Résumé :</span>
+                    <span class="value" id="articleAbstract">Chargement...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration API (masquée par défaut) -->
+        <div class="config-section" id="configSection">
+            <button class="config-toggle" id="configToggle">
+                ⚙️ Configuration des API
+            </button>
+            <div class="config-content" id="configContent" style="display: none;">
+                <div class="api-config">
+                    <label for="perplexityKey">Clé API Perplexity :</label>
+                    <input type="password" id="perplexityKey" placeholder="pplx-..." class="api-input">
+                </div>
+                <div class="api-config">
+                    <label for="claudeKey">Clé API Claude (Anthropic) :</label>
+                    <input type="password" id="claudeKey" placeholder="sk-ant-..." class="api-input">
+                </div>
+                <button class="save-config-btn" id="saveConfigBtn">💾 Enregistrer les clés</button>
+                <div class="config-status" id="configStatus"></div>
+            </div>
+        </div>
+
+        <!-- Zone de conversation -->
+        <div class="conversation-container">
+            <div class="messages-container" id="messagesContainer">
+                <!-- Message de bienvenue -->
+                <div class="message agent-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>Bonjour ! Je suis votre assistant IA spécialisé en recherche scientifique.</p>
+                        <p>Je peux vous aider à :</p>
+                        <ul>
+                            <li>📚 Trouver des sources fiables et récentes sur le sujet</li>
+                            <li>🔍 Approfondir un aspect spécifique de l'article</li>
+                            <li>💡 Expliquer des concepts complexes</li>
+                            <li>🌐 Contextualiser les découvertes dans le domaine</li>
+                        </ul>
+                        <p><strong>Posez-moi votre première question ci-dessous !</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone de saisie -->
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea
+                        id="userInput"
+                        class="user-input"
+                        placeholder="Posez votre question sur l'article..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" id="sendButton">
+                        <span class="send-icon">📤</span>
+                        <span class="send-text">Envoyer</span>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    💡 Astuce : Soyez précis dans vos questions pour obtenir des réponses plus pertinentes
+                </div>
+            </div>
+        </div>
+
+        <!-- Historique (optionnel, masqué par défaut) -->
+        <div class="history-toggle">
+            <button class="history-btn" id="historyToggle">
+                📜 Voir l'historique des conversations
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Recherche en cours...</p>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
