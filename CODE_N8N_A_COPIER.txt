@@ -1,0 +1,279 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    CODE À COPIER-COLLER DANS N8N                             ║
+║                    Nœud : "Générer Emails"                                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📋 INSTRUCTIONS :
+
+1. Ouvrez votre workflow n8n
+2. Trouvez le nœud "Générer Emails" (type: Code)
+3. Double-cliquez dessus pour l'éditer
+4. Sélectionnez TOUT le code JavaScript actuel (Ctrl+A)
+5. Supprimez-le
+6. Copiez le code ci-dessous (entre les lignes ═════)
+7. Collez-le dans n8n
+8. Cliquez sur "Execute Node" pour tester
+9. Sauvegardez le workflow
+
+═══════════════════════════════════════════════════════════════════════════════
+// Récupérer l'article complet et les traductions
+const articleData = $input.all();
+
+// L'article original est le premier élément
+const article = articleData[0].json;
+
+// Les traductions sont dans les éléments suivants
+const titreTraduction = articleData[1]?.json?.output?.[0]?.content?.[0]?.text || article.title_en;
+const abstractTraduction = articleData[2]?.json?.output?.[0]?.content?.[0]?.text || article.abstract_en;
+
+const destinataires = $('Lire Liste Destinataires').all();
+
+if (!destinataires || destinataires.length === 0) {
+  throw new Error('❌ Aucun destinataire trouvé');
+}
+
+const dateJour = new Date().toLocaleDateString('fr-FR', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+console.log('Titre FR:', titreTraduction);
+console.log('Abstract FR:', abstractTraduction.substring(0, 100) + '...');
+
+// Générer emails pour chaque destinataire
+const emails = destinataires.map(dest => {
+  const prenom = dest.json.Prénom || dest.json.Prenom || dest.json.prenom || 'Cher lecteur';
+  const email = dest.json.Email || dest.json.email;
+  const traduction = (dest.json.Traduction || dest.json.traduction || 'Non').toLowerCase();
+  const includeEnglish = traduction === 'oui' || traduction === 'yes';
+
+  const emailHtml = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article du jour – ${dateJour}</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f7f9;
+    }
+    .container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px;
+      text-align: center;
+      border-radius: 10px 10px 0 0;
+      margin: -40px -40px 30px -40px;
+    }
+    .header h1 {
+      color: white;
+      font-size: 24px;
+      margin: 0 0 8px 0;
+    }
+    .greeting {
+      font-size: 16px;
+      margin-bottom: 25px;
+      color: #555;
+    }
+    .metadata {
+      background-color: #f8fafc;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #0066cc;
+      margin-bottom: 25px;
+    }
+    .metadata-item {
+      margin: 8px 0;
+      display: flex;
+      align-items: flex-start;
+    }
+    .metadata-icon {
+      margin-right: 10px;
+      min-width: 20px;
+    }
+    .french-section {
+      background-color: #f0f9ff;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #0284c7;
+      margin-bottom: 15px;
+    }
+    .english-section {
+      background-color: #fffbeb;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #f59e0b;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 6px;
+      margin: 20px 0;
+      font-weight: 500;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 25px;
+      border-top: 2px solid #e5e7eb;
+      text-align: center;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .container { padding: 20px; }
+      .header { margin: -20px -20px 20px -20px; padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💡 Veille scientifique – Performance & entraînement</h1>
+    </div>
+
+    <div class="greeting">
+      Bonjour <strong>${prenom}</strong>,<br>
+      Voici votre article scientifique sélectionné pour aujourd'hui :
+    </div>
+
+    <div class="metadata">
+      <div class="metadata-item">
+        <span class="metadata-icon">👤</span>
+        <span><b>Auteurs :</b> ${article.authors || 'Non disponible'}</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-icon">📘</span>
+        <span><b>Journal :</b> ${article.journal || 'Non disponible'}</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-icon">📅</span>
+        <span><b>Date de publication :</b> ${article.date_publication || 'Non disponible'}</span>
+      </div>
+    </div>
+
+    <!-- VERSION FRANÇAISE (TOUJOURS AFFICHÉE) -->
+    <div class="french-section">
+      <h3 style="color: #0284c7; margin-top: 0;">🇫🇷 Version française</h3>
+
+      <div class="metadata-item">
+        <span class="metadata-icon">📰</span>
+        <span><b>Titre :</b></span>
+      </div>
+      <p style="font-weight: bold; margin: 10px 0;">${titreTraduction}</p>
+
+      <div class="metadata-item">
+        <span class="metadata-icon">🧠</span>
+        <span><b>Résumé :</b></span>
+      </div>
+      <p style="line-height: 1.6; margin: 10px 0;">${abstractTraduction}</p>
+    </div>
+
+    ${includeEnglish ? `
+    <!-- VERSION ANGLAISE (UNIQUEMENT SI DEMANDÉE) -->
+    <div class="english-section">
+      <h3 style="color: #f59e0b; margin-top: 0;">🇬🇧 English Version</h3>
+
+      <div class="metadata-item">
+        <span class="metadata-icon">📰</span>
+        <span><b>Title :</b></span>
+      </div>
+      <p style="font-weight: bold; margin: 10px 0;">${article.title_en || 'Title not available'}</p>
+
+      <div class="metadata-item">
+        <span class="metadata-icon">🧠</span>
+        <span><b>Abstract :</b></span>
+      </div>
+      <p style="line-height: 1.6; margin: 10px 0;">${article.abstract_en || 'Abstract not available.'}</p>
+    </div>` : ''}
+
+    <div style="text-align: center;">
+      <a href="${article.pubmed_url || '#'}" class="button" target="_blank">
+        🔗 Lire l'article sur PubMed
+      </a>
+    </div>
+
+    <!-- Bouton Agent IA -->
+    <div style="text-align: center; margin-top: 15px;">
+      <a href="http://localhost:5000/?title=${encodeURIComponent(titreTraduction)}&abstract=${encodeURIComponent(abstractTraduction)}&pmid=${article.pmid || ''}" class="button" target="_blank" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+        🤖 Agent IA — Explorer le sujet
+      </a>
+    </div>
+
+    <div class="footer">
+      <p><strong>✉️ Newsletter scientifique</strong> - Performance & Entraînement</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  return {
+    json: {
+      destinataire_email: email,
+      destinataire_prenom: prenom,
+      email_subject: `Article du jour – ${dateJour}`,
+      email_html: emailHtml,
+      pmid: article.pmid,
+      traduction_demandee: includeEnglish
+    }
+  };
+});
+
+return emails;
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ CE QUI A ÉTÉ AJOUTÉ :
+
+Le nouveau code ajoute un deuxième bouton dans l'email :
+
+🔗 Lire l'article sur PubMed  (bouton existant, violet)
+🤖 Agent IA — Explorer le sujet  (NOUVEAU bouton, vert)
+
+Le bouton Agent IA :
+- Est positionné juste en dessous du bouton PubMed
+- A un style vert moderne pour se distinguer
+- Redirige vers : http://localhost:5000 avec les paramètres de l'article
+- Transmet automatiquement : titre, résumé et PMID
+
+⚠️ IMPORTANT :
+
+1. Le serveur Agent IA doit être lancé AVANT de cliquer sur le bouton
+   → Voir GUIDE_INSTALLATION.md pour démarrer le serveur
+
+2. Si vous voulez changer le port (par défaut 5000), modifiez :
+   - Dans ce code : http://localhost:5000
+   - Dans agent-ia/app.py : port=5000
+
+3. Testez le nœud après modification :
+   - Cliquez sur "Execute Node" dans n8n
+   - Vérifiez qu'il n'y a pas d'erreurs
+   - Inspectez la sortie HTML pour voir les 2 boutons
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 ÉTAPES SUIVANTES :
+
+1. ✅ Coller ce code dans n8n
+2. 📦 Installer les dépendances Python : pip install -r agent-ia/requirements.txt
+3. 🔑 Obtenir les clés API (Perplexity + Claude)
+4. ▶️ Lancer le serveur : cd agent-ia && ./start.sh
+5. ⚙️ Configurer les clés dans l'interface : http://localhost:5000
+6. 🎯 Tester le workflow n8n complet
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 Documentation complète : GUIDE_INSTALLATION.md
